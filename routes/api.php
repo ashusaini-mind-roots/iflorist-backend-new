@@ -24,9 +24,8 @@ Route::get('/test', function () {
         die("Could not open connection to database server.  Please check your configuration.");
     }
 });
-//Route::get('test_email','CompanyController@testEmail');
-Route::prefix('auth')->group(function () {
 
+Route::prefix('auth')->group(function () {
 
     Route::post('register', 'AuthController@register');
     Route::post('login', 'AuthController@login');
@@ -35,14 +34,12 @@ Route::prefix('auth')->group(function () {
     Route::post('logout', 'AuthController@logout');
     Route::post('exis_user', 'AuthController@exis_user');
 
-
     Route::get('users', 'AuthController@users');
     Route::delete('delete/{id}', 'AuthController@delete');
     Route::get('getById/{id}', 'AuthController@getById');
     Route::put('update/{id}', 'AuthController@update');
 
     Route::group(['middleware' => 'auth:api'], function () {
-        /*Route::get('user', 'AuthController@user');*/
         Route::get('logout', 'AuthController@logout');
         Route::get('me', 'AuthController@me');
         Route::post('user_rol', 'AuthController@user_rol');
@@ -55,23 +52,6 @@ Route::prefix('role')->group(function () {
     Route::get('getById/{id}', 'RolesController@getById');
     Route::delete('delete/{id}', 'RolesController@delete');
     Route::put('update/{id}', 'RolesController@update');
-});
-
-Route::prefix('store')->group(function () {
-	Route::get('all', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'StoresController@all']);
-	Route::get('stores_by_user/{user_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@storesByUser']);
-    Route::post('create', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@create']);
-	Route::get('getById/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@getById']);
-	Route::get('getImageById/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@getImageById']);
-	Route::delete('delete/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@delete']);
-	Route::post('update/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@update']);
-//	Route::get('stores_employees_tax_percent_calculators/{user_id}', ['middleware' => 'auth.role:COMPANYADMIN', 'uses' => 'StoresController@storesEmployeesTaxPercentCalculators']);
-	Route::post('setWeeklyProjectionPercentRevenues', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@setWeeklyProjectionPercentRevenues']);
-});
-
-Route::prefix('week')->group(function () {
-    Route::get('week_by_year/{year}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'WeeksController@weekByYear']);
-    Route::post('create', 'WeeksController@taskWeek');
 });
 
 Route::prefix('daily_revenue')->group(function () {
@@ -121,20 +101,6 @@ Route::prefix('master_overview_weekly')->group(function () {
     Route::get('scheduled_payroll_by_quarter/{year}/{store_id}/{week_id}', 'MasterOverviewWeeklyController@get_scheduleds_payroll_by_quarter');
 });
 
-Route::prefix('employee')->group(function () {
-    Route::get('all/{store_id}', 'EmployeesController@getAll');
-	Route::get('allActiveAndInactive/{store_id}', 'EmployeesController@getAllActiveAndInactive');
-    Route::post('create', 'EmployeesController@create');
-    Route::post('update/{id}', 'EmployeesController@update');
-	Route::post('changeAdminStore', ['middleware' => 'auth.role:COMPANYADMIN', 'uses' => 'EmployeesController@changeStoreAdmin']);
-    Route::get('getById/{id}', 'EmployeesController@getById');
-    Route::get('getImageById/{id}', 'EmployeesController@getImageById');
-    Route::get('getEmployeesByStore/{store_id}', 'EmployeesController@getEmployeesByStore');
-    Route::delete('delete/{id}', 'EmployeesController@delete');
-	Route::get('getImageByUserId/{id}', 'EmployeesController@getImageByUserId');
-	Route::get('/show_imagen/employee/{imagen}', 'EmployeesController@show_imagen');
-});
-
 Route::prefix('category')->group(function () {
     Route::get('all', 'CategoriesController@index');
 });
@@ -145,14 +111,6 @@ Route::prefix('statu')->group(function () {
 
 Route::prefix('work_man_comp')->group(function () {
     Route::get('all', 'WorkMansCompController@index');
-});
-
-Route::prefix('schedule')->group(function () {
-    Route::post('update_or_add', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@updateoradd']);
-    Route::get('all/{store_id}/{week_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@schedule_week']);
-	Route::get('seven_days_number/{week_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@seven_days_number']);
-    Route::get('category_employee/{store_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@categoryEmployeeList']);
-
 });
 
 Route::prefix('target_percentage')->group(function () {
@@ -187,18 +145,57 @@ Route::prefix('companyemployee')->group(function () {
 	Route::get('/show_imagen/companyemployee/{imagen}', 'CompanyEmployeeController@show_imagen');
 });
 
-Route::prefix('app_user')->group(function () {
-	Route::get('all/{store_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@all']);
-	Route::post('create', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@create']);
-	Route::post('update/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@update']);
-	Route::get('getAppUser/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@getById']);
-	/*Route::get('stores_by_user/{user_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@storesByUser']);
+//Routes which are using Role middleware
+
+//Middleware Role
+Route::prefix('store')->group(function () {
+    Route::get('all', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'StoresController@all']);
+    Route::get('stores_by_user/{user_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@storesByUser']);
     Route::post('create', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@create']);
-	Route::get('getById/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@getById']);
-	Route::get('getImageById/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@getImageById']);
-	Route::delete('delete/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@delete']);
-	Route::post('update/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@update']);
-	Route::get('stores_employees_tax_percent_calculators/{user_id}', ['middleware' => 'auth.role:COMPANYADMIN', 'uses' => 'StoresController@storesEmployeesTaxPercentCalculators']);
-	Route::post('setWeeklyProjectionPercentRevenues', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@setWeeklyProjectionPercentRevenues']);*/
+    Route::get('getById/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@getById']);
+    Route::get('getImageById/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@getImageById']);
+    Route::delete('delete/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@delete']);
+    Route::post('update/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@update']);
+    Route::post('setWeeklyProjectionPercentRevenues', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER', 'uses' => 'StoresController@setWeeklyProjectionPercentRevenues']);
 });
+
+//Middleware Role
+Route::prefix('week')->group(function () {
+    Route::get('week_by_year/{year}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'WeeksController@weekByYear']);
+    Route::post('create', 'WeeksController@taskWeek');
+});
+
+//Middleware Role
+Route::prefix('employee')->group(function () {
+    Route::get('all/{store_id}', 'EmployeesController@getAll');
+    Route::get('allActiveAndInactive/{store_id}', 'EmployeesController@getAllActiveAndInactive');
+    Route::post('create', 'EmployeesController@create');
+    Route::post('update/{id}', 'EmployeesController@update');
+    Route::post('changeAdminStore', ['middleware' => 'auth.role:COMPANYADMIN', 'uses' => 'EmployeesController@changeStoreAdmin']);
+    Route::get('getById/{id}', 'EmployeesController@getById');
+    Route::get('getImageById/{id}', 'EmployeesController@getImageById');
+    Route::get('getEmployeesByStore/{store_id}', 'EmployeesController@getEmployeesByStore');
+    Route::delete('delete/{id}', 'EmployeesController@delete');
+    Route::get('getImageByUserId/{id}', 'EmployeesController@getImageByUserId');
+    Route::get('/show_imagen/employee/{imagen}', 'EmployeesController@show_imagen');
+});
+
+//Middleware Role
+Route::prefix('schedule')->group(function () {
+    Route::post('update_or_add', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@updateoradd']);
+    Route::get('all/{store_id}/{week_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@schedule_week']);
+    Route::get('seven_days_number/{week_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@seven_days_number']);
+    Route::get('category_employee/{store_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,EMPLOYEE', 'uses' => 'ScheduleController@categoryEmployeeList']);
+
+});
+
+//Middleware Role
+Route::prefix('app_user')->group(function () {
+    Route::get('all/{store_id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@all']);
+    Route::post('create', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@create']);
+    Route::post('update/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@update']);
+    Route::get('getAppUser/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@getById']);
+});
+
+
 
