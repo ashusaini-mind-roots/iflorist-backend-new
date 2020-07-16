@@ -104,11 +104,7 @@ class AuthController extends Controller
             ->where('nuflorist_user_tokens.nuflorist_user_id',$resp->admin_id)
             ->first();
 
-            if(!empty($nufloristUT)){
-                $NufloristUserTokens->access_token =$access_token;
-                $NufloristUserTokens->expiryDate = date('Y-m-d H:i:s', strtotime('1 hour'));
-                $NufloristUserTokens->update();
-            }else{
+            if(empty($nufloristUT)){
                 $NufloristUserTokens = new NufloristUserTokens();
                 $NufloristUserTokens->nuflorist_user_id = $resp->admin_id;
                 $NufloristUserTokens->access_token =$access_token;
@@ -120,11 +116,8 @@ class AuthController extends Controller
             ->select('nuflorist_user_roles.id')
             ->where('nuflorist_user_roles.nuflorist_user_id',$resp->admin_id)
             ->first();
-            if(!empty($NufloristUserRoles)){
-                $NufloristUserRoles->nuflorist_user_id=$resp->admin_id;
-                $NufloristUserRoles->role_id=4;
-                $NufloristUserRoles->update();
-            }else{
+
+            if(empty($NufloristUserRoles)){
                 $NufloristUserRoles = new NufloristUserRoles();
                 $NufloristUserRoles->nuflorist_user_id=$resp->admin_id;
                 $NufloristUserRoles->role_id=4;
