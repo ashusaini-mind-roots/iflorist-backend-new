@@ -99,18 +99,30 @@ class AuthController extends Controller
             $data['company']=!empty($resp->companyInfo)?$resp->companyInfo:'';
             $data['storeInfo']=!empty($resp->storeInfo)?$resp->storeInfo:'';
 
-            //insert token
-            $NufloristUserTokens = new NufloristUserTokens();
-            $NufloristUserTokens->nuflorist_user_id = $resp->admin_id;
-            $NufloristUserTokens->access_token =$access_token;
-            $NufloristUserTokens->expiryDate = date('Y-m-d H:i:s', strtotime('1 hour'));
-            $NufloristUserTokens->save();
+            $NufloristUserTokens = DB::table('nuflorist_user_tokens')
+            ->select('nuflorist_user_tokens.id')
+            ->where('nuflorist_user_tokens.nuflorist_user_id',$resp->admin_id)
+            ->first();
 
-            //insert user role
-            $NufloristUserRoles = new NufloristUserRoles();
-            $NufloristUserRoles->nuflorist_user_id=$resp->admin_id;
-            $NufloristUserRoles->role_id=4;
-            $NufloristUserRoles->save();
+            if(empty($nufloristUT)){
+                $NufloristUserTokens = new NufloristUserTokens();
+                $NufloristUserTokens->nuflorist_user_id = $resp->admin_id;
+                $NufloristUserTokens->access_token =$access_token;
+                $NufloristUserTokens->expiryDate = date('Y-m-d H:i:s', strtotime('1 hour'));
+                $NufloristUserTokens->save();
+            }
+            
+            $NufloristUserRoles = DB::table('nuflorist_user_roles')
+            ->select('nuflorist_user_roles.id')
+            ->where('nuflorist_user_roles.nuflorist_user_id',$resp->admin_id)
+            ->first();
+
+            if(empty($NufloristUserRoles)){
+                $NufloristUserRoles = new NufloristUserRoles();
+                $NufloristUserRoles->nuflorist_user_id=$resp->admin_id;
+                $NufloristUserRoles->role_id=4;
+                $NufloristUserRoles->save();
+            }
 
             $roles = DB::table('roles')
             ->leftjoin('nuflorist_user_roles','nuflorist_user_roles.role_id','=','roles.id')
@@ -120,7 +132,6 @@ class AuthController extends Controller
             $data['roles']=$roles;
 
             return response()->json($data);
-
         }else{
             return response()->json(['error'=>'Unauthorized'],401);
         }
