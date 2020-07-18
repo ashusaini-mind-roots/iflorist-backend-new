@@ -52,7 +52,7 @@ class PlansController extends Controller
     }
 
 
-    public function modulesbyuser(Request $request)
+    public function modulesbyuser_HOLD(Request $request)
     {
         $modules_return = array();
         $user_roles = $request->auth_roles->toArray();
@@ -79,19 +79,15 @@ class PlansController extends Controller
             if($found == true) $modules_return[] = $module;
         }
 
-
-//        $company = DB::table('company')
-//            ->leftjoin('stores', 'stores.company_id', '=', 'company.id')
-//            ->leftjoin('employees', 'employees.store_id', '=', 'stores.id')
-//            ->leftjoin('users', 'users.id', '=', 'employees.user_id')
-//            ->where('users.id',/*$user_id*/2)
-//            ->select('company.id as id')
-//            ->first();
-
-
-
-
         return response()->json(['modules' => $modules_return/*,'test'=>$company*/], 200);
     }
+
+    public function modulesbyuser(Request $request)
+    {
+        $modules_return = Module::allModules();
+
+        return response()->json(['modules' => $modules_return], 200);
+    }
+
 
 }
