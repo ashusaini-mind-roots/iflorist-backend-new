@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Company;
 use App\Models\Store;
 use Illuminate\Support\Str;
-
-
+use App\Models\NufloristUserRoles;
+use App\Models\NufloristUserTokens;
+use App\Helpers\Utils;
 
 class AuthController extends Controller
 {
@@ -60,19 +61,72 @@ class AuthController extends Controller
         return response()->json(['status' => 'success'], 200);
     }
 
-    /*public function login(Request $request)
+    public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        // Get cURL resource
+        $curl = curl_init();
+        // Set some options - we are passing in a useragent too here
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => 'https://nuflorist.com/nfadmin-dev/nuflorist-backend-dev/api/nuflorist_user_login',
+            CURLOPT_USERAGENT => 'cURL Request',
+            CURLOPT_POST => 1,
+            CURLOPT_POSTFIELDS => [
+                'email' => $request->email,
+                'password' => $request->password,
+                'app_id' => 'ilBJkOELnv'
+            ]
+        ]);
+        // Send the request & save response to $resp
+        $resp = curl_exec($curl);
+        // Close request to clear up some resources
+        $resp=json_decode($resp);
 
-        //if ($token = $this->guard()->attemp($credentials)) {
-        if ($token = $this->guard()->check($credentials)) {
-            return response()->json(['status' => 'success'], 200);
+        if($resp->status == 1){
+
+            $access_token = Utils::random_strings(32);
+
+            $data=array();
+            $data['userid']=$resp->admin_id;
+            $data['access_token']=$access_token;
+            $data['token_type']='custom';
+            $data['expires_in']='';
+
+            $data['user']['id']=$resp->admin_id;
+            $data['user']['name']='nuflorist';
+            $data['user']['email']=$request->email;
+
+            $data['company']=!empty($resp->companyInfo)?$resp->companyInfo:'';
+            $data['storeInfo']=!empty($resp->storeInfo)?$resp->storeInfo:'';
+
+            //insert token
+            $NufloristUserTokens = new NufloristUserTokens();
+            $NufloristUserTokens->nuflorist_user_id = $resp->admin_id;
+            $NufloristUserTokens->access_token =$access_token;
+            $NufloristUserTokens->expiryDate = date('Y-m-d H:i:s', strtotime('1 hour'));
+            $NufloristUserTokens->save();
+
+            //insert user role
+            $NufloristUserRoles = new NufloristUserRoles();
+            $NufloristUserRoles->nuflorist_user_id=$resp->admin_id;
+            $NufloristUserRoles->role_id=4;
+            $NufloristUserRoles->save();
+
+            $roles = DB::table('roles')
+            ->leftjoin('nuflorist_user_roles','nuflorist_user_roles.role_id','=','roles.id')
+            ->where('nuflorist_user_roles.nuflorist_user_id',$resp->admin_id)
+            ->select('roles.name')
+            ->get();
+            $data['roles']=$roles;
+
+            return response()->json($data);
+
+        }else{
+            return response()->json(['error'=>'Unauthorized'],401);
         }
-        //dd('hello');
-        return response()->json(['error' => 'login_error'], 401);
-    }*/
+    }
 
-    public function login()
+    public function login_HOLD()
     {
 		$credentials = request(['email', 'password']);
 
@@ -91,21 +145,16 @@ class AuthController extends Controller
                 $texto = config('app.api_url_activation_company').'/'.auth()->user()->id.'-'.$new_activation_code;
 
                 $this->send_mail(auth()->user()->email, $texto);
-//                $companyFind = Company::where('user_id',auth()->user()->id);
-                $user->id = auth()->user()->id;
-                $user->activation_code = $new_activation_code;
-                $user->activation_code_expired_date = date('Y-m-d H-i-s');
-                $user->update(['activation_code_expired_date'=>date('Y-m-d H-i-s'),'activation_code'=>$new_activation_code]);
-                return response()->json(['error' => 'Your activation code has expired, we have sent you a new activation code'], 200);
-            }
-
-            return response()->json(['error'=>'Company deactivated'],200);
+            $user->id = auth()->user()->id;
+            $user->activation_code = $new_activation_code;
+            $user->activation_code_expired_date = date('Y-m-d H-i-s');
+            $user->update(['activation_code_expired_date'=>date('Y-m-d H-i-s'),'activation_code'=>$new_activation_code]);
+            return response()->json(['error' => 'Your activation code has expired, we have sent you a new activation code'], 200);
         }
 
-//        if($user->if_active(auth()->user()->id)==true)
-//            return response()->json(['error'=>'Company canceled'],200);
-
-        return $this->responseWithToken($token);
+        return response()->json(['error'=>'Company deactivated'],200);
+        }
+      return $this->responseWithToken($token);
     }
 
     public function loginApp()

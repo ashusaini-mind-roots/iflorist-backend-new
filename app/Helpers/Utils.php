@@ -21,4 +21,10 @@ class Utils
     public static function addleftzero($number){
         return str_pad((string)$number, 2, "0", STR_PAD_LEFT);
     }
+
+    public static function random_strings($length_of_string){ 
+        $str_result = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'; 
+        return substr(str_shuffle($str_result),  
+                           0, $length_of_string); 
+    } 
 }
