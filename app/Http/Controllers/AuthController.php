@@ -110,6 +110,12 @@ class AuthController extends Controller
                 $NufloristUserTokens->access_token =$access_token;
                 $NufloristUserTokens->expiryDate = date('Y-m-d H:i:s', strtotime('1 hour'));
                 $NufloristUserTokens->save();
+            }else{
+                //update access token
+                $NufloristUserTokens = NufloristUserTokens::where('nuflorist_user_id', $resp->admin_id)->firstOrFail();
+                $NufloristUserTokens->access_token =$access_token;
+                $NufloristUserTokens->expiryDate = date('Y-m-d H:i:s', strtotime('1 hour'));
+                $NufloristUserTokens->update();
             }
             
             $NufloristUserRoles = DB::table('nuflorist_user_roles')

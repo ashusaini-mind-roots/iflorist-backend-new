@@ -52,8 +52,9 @@ class PlansController extends Controller
     }
 
 
-    public function modulesbyuser_HOLD(Request $request)
+    public function modulesbyuser(Request $request)
     {
+        
         $modules_return = array();
         $user_roles = $request->auth_roles->toArray();
 
@@ -61,7 +62,7 @@ class PlansController extends Controller
             $modules = Module::allModules();
         }
         else
-            $modules = Plan::modulesbyuser(/*$user_id*/auth()->user()->id);
+            $modules = Plan::modulesbyuser($request->nuflorist_user_id);
 		foreach ($modules as $module){
             $found = false;
             if($module->roles != null){
@@ -81,13 +82,5 @@ class PlansController extends Controller
 
         return response()->json(['modules' => $modules_return/*,'test'=>$company*/], 200);
     }
-
-    public function modulesbyuser(Request $request)
-    {
-        $modules_return = Module::allModules();
-
-        return response()->json(['modules' => $modules_return], 200);
-    }
-
 
 }
