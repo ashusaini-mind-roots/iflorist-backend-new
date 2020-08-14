@@ -115,14 +115,15 @@ Route::prefix('work_man_comp')->group(function () {
 
 Route::prefix('target_percentage')->group(function () {
     Route::put('update_target_percentage/{store_id}/{week_id}', 'TargetPercentagesController@update_target_porcentage');
-	Route::post('update_create_target_percentage', 'TargetPercentagesController@update_create_target_porcentage');
+    Route::post('update_create_target_percentage', 'TargetPercentagesController@update_create_target_porcentage');
     Route::get('{store_id}/{week_id}', 'TargetPercentagesController@get_target');
 });
 
 Route::prefix('plan')->group(function () {
     Route::get('plans', 'PlansController@plans');
     Route::get('plansbyuser/{week_id}', 'PlansController@plansbyuser');
-    Route::get('modulesbyuser', ['middleware' => 'auth.role:ALL_GRANTED', 'uses' => 'PlansController@modulesbyuser']);
+    Route::get('modulesbyuser/{week_id}', 'PlansController@modulesbyuser');
+    //Route::get('modulesbyuser/{week_id}', ['middleware' => /*'auth.role:COMPANYADMIN,STOREMANAGER'*/'auth.role:ALL_GRANTED', 'uses' => 'PlansController@modulesbyuser']);
 });
 
 Route::prefix('company')->group(function () {
@@ -142,7 +143,7 @@ Route::prefix('companyemployee')->group(function () {
     Route::get('getImageById/{id}', 'CompanyEmployeeController@getImageById');
     Route::delete('delete/{id}', 'CompanyEmployeeController@delete');
     Route::post('update/{id}', 'CompanyEmployeeController@update');
-	Route::get('/show_imagen/companyemployee/{imagen}', 'CompanyEmployeeController@show_imagen');
+    Route::get('/show_imagen/companyemployee/{imagen}', 'CompanyEmployeeController@show_imagen');
 });
 
 //Routes which are using Role middleware
@@ -196,6 +197,5 @@ Route::prefix('app_user')->group(function () {
     Route::post('update/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@update']);
     Route::get('getAppUser/{id}', ['middleware' => 'auth.role:COMPANYADMIN,STOREMANAGER,APPUSER', 'uses' => 'AppUserController@getById']);
 });
-
 
 
